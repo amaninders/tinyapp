@@ -20,7 +20,7 @@
 				<div class="collapse" id="collapseExample">
 					<div class="card card-body">
 						<form class="form-inline" action="/urls/<%= shortURL %>" method="POST">
-							<div class="form-group mb-2">
+							<div class="form-group mb-2 mx-auto" style="width: 550px">
 								<label for="longURL">Enter the new URL:</label>
 								<input class="form-control" name="longURL" placeholder="<%= longURL %>" pattern="https://.*" style="width: 300px; margin: 1em" required>
 								<button type="submit" class="btn btn-danger">Update</button>
