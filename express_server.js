@@ -12,6 +12,7 @@ app.set('view engine','ejs');
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+	
 };
 
 const generateRandomString = () => {
@@ -44,6 +45,12 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${tinyURL}`);
 });
 
+
+app.post("/urls/:id/delete", (req, res) => {
+  // delete given property/url from the object
+	delete urlDatabase[req.params.id];
+	res.redirect(`/urls`)
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
