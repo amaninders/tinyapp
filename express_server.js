@@ -2,8 +2,7 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(express.urlencoded({extended: true}));
 
 // set view engine to ejs
 app.set('view engine','ejs');
@@ -12,7 +11,6 @@ app.set('view engine','ejs');
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
-	
 };
 
 const generateRandomString = () => {
@@ -43,6 +41,11 @@ app.post("/urls", (req, res) => {
   const tinyURL = generateRandomString();
   urlDatabase[tinyURL] = req.body.longURL;
   res.redirect(`/urls/${tinyURL}`);
+});
+
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[req.params.id] = req.body.longURL;
+  res.redirect(`/urls`);
 });
 
 
