@@ -10,21 +10,35 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-		<form method="POST" action="/login">
-			<div class="form-row align-items-center">
-				<div class="col-auto">
-					<label class="sr-only" for="inlineFormInputGroup">Username</label>
-					<div class="input-group mb-2">
-						<div class="input-group-prepend">
-							<div class="input-group-text">@</div>
-						</div>
-						<input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Username" name="username">
+		<% if (username) { %>
+			<form method="POST" action="/logout">
+				<div class="form-row align-items-center">
+					<div class="col-auto">
+						<h5><%= username %></h5>
+					</div>
+					<div class="col-auto">
+						<button type="submit" class="btn btn-dark mb-2">Logout</button>
 					</div>
 				</div>
-				<div class="col-auto">
-					<button type="submit" class="btn btn-dark mb-2">Login</button>
+			</form>
+		<% }else{ %>
+			<form method="POST" action="/login">
+				<div class="form-row align-items-center">
+					<div class="col-auto">
+						<label class="sr-only" for="inlineFormInputGroup">Username</label>
+						<div class="input-group mb-2">
+							<div class="input-group-prepend">
+								<div class="input-group-text">@</div>
+							</div>
+							<input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Username" name="username">
+						</div>
+					</div>
+					<div class="col-auto">
+						<button type="submit" class="btn btn-dark mb-2">Login</button>
+					</div>
+					<%= username %>
 				</div>
-			</div>
-		</form>
+			</form>
+		<% } %>
   </nav>
 </header>
