@@ -5,16 +5,20 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
-        <a class="nav-item nav-link" href="/urls">My URLs</a>
-        <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-      </div>
+			<ul class="nav nav-tabs">
+				<li class="nav-item">
+					<a class="nav-link btn-dark" href="/urls">My URLs</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link btn-dark" href="/urls/new">Create New URL</a>
+				</li>
+			</ul>
     </div>
 		<% if (username) { %>
 			<form method="POST" action="/logout">
 				<div class="form-row align-items-center">
 					<div class="col-auto">
-						<h5>Logged in as: <%= username %></h5>
+						<h5>Hey <%= username %> 👋</h5>
 					</div>
 					<div class="col-auto">
 						<button type="submit" class="btn btn-dark mb-2">Logout</button>
@@ -22,21 +26,12 @@
 				</div>
 			</form>
 		<% }else{ %>
-			<form method="POST" action="/login">
+			<form>
 				<div class="form-row align-items-center">
 					<div class="col-auto">
-						<label class="sr-only" for="inlineFormInputGroup">Username</label>
-						<div class="input-group mb-2">
-							<div class="input-group-prepend">
-								<div class="input-group-text">@</div>
-							</div>
-							<input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Username" name="username">
-						</div>
+						<a href="/register" class="btn btn-dark" role="button" aria-pressed="true">Register</a>
+						<a href="/login" class="btn btn-dark" role="button" aria-pressed="true">Login</a>
 					</div>
-					<div class="col-auto">
-						<button type="submit" class="btn btn-dark mb-2">Login</button>
-					</div>
-					<%= username %>
 				</div>
 			</form>
 		<% } %>
