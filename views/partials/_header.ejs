@@ -1,39 +1,42 @@
 <header>
-  <nav class="navbar navbar-expand-md navbar-dark bg-secondary">
-    <a class="navbar-brand" href="/urls">TinyApp</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-			<ul class="nav nav-tabs">
-				<li class="nav-item">
-					<a class="nav-link btn-dark" href="/urls">My URLs</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link btn-dark" href="/urls/new">Create New URL</a>
-				</li>
-			</ul>
-    </div>
+
+		<nav class="navbar navbar-expand-md navbar-dark bg-secondary">
+		<a class="navbar-brand" href="#">
+			<img src="/images/brand.svg" width="40" height="40" class="d-inline-block align-top" alt="">
+		</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+
 		<% if (username) { %>
-			<form method="POST" action="/logout">
-				<div class="form-row align-items-center">
-					<div class="col-auto">
-						<h5>Hey <%= username %> 👋</h5>
-					</div>
-					<div class="col-auto">
-						<button type="submit" class="btn btn-dark mb-2">Logout</button>
-					</div>
+
+			<div class="navbar-nav">
+				<a class="nav-item btn btn-dark" href="/urls" style="margin-right: 10px;">My URLs</a>
+				<a class="nav-item btn btn-dark" href="/urls/new">Create New URL</a>
+			</div>
+		</div>
+		<form method="POST" action="/logout">
+			<div class="form-row align-items-center">
+				<div class="col-auto">
+					<h5>Hey <%= username %> 👋</h5>
 				</div>
-			</form>
-		<% }else{ %>
-			<form>
-				<div class="form-row align-items-center">
-					<div class="col-auto">
-						<a href="/register" class="btn btn-dark" role="button" aria-pressed="true">Register</a>
-						<a href="/login" class="btn btn-dark" role="button" aria-pressed="true">Login</a>
-					</div>
+				<div class="col-auto">
+					<button type="submit" class="btn btn-dark mb-2">Logout</button>
 				</div>
-			</form>
-		<% } %>
-  </nav>
+			</div>
+		</form>	
+    
+	<% }else{ %>
+
+				<div class="navbar-nav" style="margin-left: auto;">
+					<a class="nav-item btn btn-dark" href="/register" style="margin-right: 10px;">Register</a>
+					<a class="nav-item btn btn-dark" href="/login">Login</a>
+				</div>
+			</div>
+			
+	<% } %>
+			
+	</nav>
+
 </header>
