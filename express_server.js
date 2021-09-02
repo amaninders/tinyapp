@@ -72,8 +72,7 @@ const validPassword = input => {
 	Route definitions 
 */
 
-
-// register page
+// render register page
 app.get("/register", (req, res) => {
 	const templateVars = { 
 		username: req.cookies["username"],
@@ -81,7 +80,7 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
-// add new user
+// process user registration
 app.post("/register", (req, res) => {
 
 	const email = req.body.email;
@@ -110,17 +109,45 @@ app.post("/register", (req, res) => {
 	console.log(users);
 	res.cookie('user_id', id);
 	res.redirect("/urls");		
-
 });
 
-// short to longURL redirect
-app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
-  res.redirect(longURL);
+
+// render login page
+app.get("/login", (req, res) => {
+	const templateVars = { 
+		username: req.cookies["username"],
+	};
+  res.render("login", templateVars);
 });
 
-// index page with all urls
+// process user login
+app.post("/login", (req, res) => {
+	
+	const email = req.body.email;
+	const password = req.body.password;
+	const user = userExists(email,users);
+
+	if (!user) {
+		return res.status(404).send("There's no account with this email address! Please register").end();
+	}
+
+	if (user.password !== password) {
+		return res.status(401).send("Incorrect email/password combination - please check!").end();
+	}
+
+	res.cookie('user_id', user.id);
+	res.redirect("/urls");
+});
+
+// process user logout
+app.post("/logout", (req, res) => {
+  res.clearCookie('username')
+  res.redirect(`/urls`);
+});
+
+
+
+// render all urls index
 app.get("/urls", (req, res) => {
   const templateVars = { 
 		username: req.cookies["username"],
@@ -129,15 +156,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// new url page
-app.get("/urls/new", (req, res) => {
-	const templateVars = { 
-		username: req.cookies["username"],
-	};
-  res.render("urls_new", templateVars);
-});
-
-// short url page
+// render individual url
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
 		username: req.cookies["username"],
@@ -147,39 +166,40 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-// login
-app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect(`/urls`);
-});
-
-// logout
-app.post("/logout", (req, res) => {
-  res.clearCookie('username')
-  res.redirect(`/urls`);
-});
-
-// create a new short url
-app.post("/urls", (req, res) => {
-  const tinyURL = generateRandomString(urlDatabase);
-  urlDatabase[tinyURL] = req.body.longURL;
-  res.redirect(`/urls/${tinyURL}`);
-});
-
-// update longURL 
+// update existing longURL 
 app.post("/urls/:id", (req, res) => {
   urlDatabase[req.params.id] = req.body.longURL;
   res.redirect(`/urls`);
 });
 
-// delete url key:value
+// delete existing url
 app.post("/urls/:id/delete", (req, res) => {
   // delete given property/url from the object
 	delete urlDatabase[req.params.id];
 	res.redirect(`/urls`)
 });
 
+// process short to longURL redirect
+app.get("/u/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  res.redirect(longURL);
+});
 
+// render page to add new url
+app.get("/urls/new", (req, res) => {
+	const templateVars = { 
+		username: req.cookies["username"],
+	};
+  res.render("urls_new", templateVars);
+});
+
+// process the newly added URL
+app.post("/urls", (req, res) => {
+  const tinyURL = generateRandomString(urlDatabase);
+  urlDatabase[tinyURL] = req.body.longURL;
+  res.redirect(`/urls/${tinyURL}`);
+});
 
 /* 
 	app activation
