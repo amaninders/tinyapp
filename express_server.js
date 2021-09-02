@@ -24,19 +24,20 @@ app.use(cookieParser());
 app.set('view engine','ejs');
 
 
+
+/*
+
+Route definitions
+
+*/
+
+// user login check for routes leading to /url*
 app.all('/urls*', function(req, res, next) {
   if (req.cookies["user_id"]) {
     next(); // pass control to the next handler
   }
   res.redirect('/login');
 });
-
-/*
-
-	Route definitions
-
-*/
-
 
 // route for root of the project
 app.get("/", (req, res) => {
