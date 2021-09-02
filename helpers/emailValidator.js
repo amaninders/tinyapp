@@ -5,5 +5,5 @@ const validEmail = emailAddr => {
 };
 
 module.exports = {
-	validEmail
-}
+  validEmail
+};

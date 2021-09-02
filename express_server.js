@@ -12,7 +12,6 @@ const { users } = require('./db/userDb');
 // express app configuration and initialization
 const express = require('express');
 const app = express();
-const router = express.Router();
 const PORT = 8080; // default port 8080
 
 // initialize thirdparty packages
@@ -25,12 +24,12 @@ app.use(cookieParser());
 app.set('view engine','ejs');
 
 
-app.all('/urls*', function (req, res, next) {
+app.all('/urls*', function(req, res, next) {
   if (req.cookies["user_id"]) {
-		next(); // pass control to the next handler
-	}
-  console.log('my middleware worked')
-  res.redirect('/login') 
+    next(); // pass control to the next handler
+  }
+  console.log('my middleware worked');
+  res.redirect('/login');
 });
 
 /*
@@ -42,22 +41,22 @@ app.all('/urls*', function (req, res, next) {
 
 // route for root of the project
 app.get("/", (req, res) => {
-	if (req.cookies["user_id"]) {
-		return res.redirect('/urls')
-	}
-  res.redirect('/login')
+  if (req.cookies["user_id"]) {
+    return res.redirect('/urls');
+  }
+  res.redirect('/login');
 });
 
 
 // render register page
 app.get("/register", (req, res) => {
-	if (!req.cookies["user_id"]) {
-	  const templateVars = {
-	    username: req.cookies["user_id"]
-	  };
-	  res.render("register", templateVars);
-	}
-	res.redirect('/urls');
+  if (!req.cookies["user_id"]) {
+    const templateVars = {
+      username: req.cookies["user_id"]
+    };
+    res.render("register", templateVars);
+  }
+  res.redirect('/urls');
 });
 
 
@@ -68,17 +67,17 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
 
   if (!validEmail(email)) {
-		return res.redirect(401, '/register')
+    return res.redirect(401, '/register');
     // return res.status(422).send('Email is invalid').redirect('/register');
   }
 
   if (userExists(email, users)) {
-		return res.status(409).send('Email is already in use').end();
+    return res.status(409).send('Email is already in use').end();
     // return res.redirect(409, '/register')
   }
 
   if (!validPassword(password)) {
-    return res.redirect(40, '/register')
+    return res.redirect(40, '/register');
   }
 
   const id = guid(users);
@@ -98,13 +97,13 @@ app.post("/register", (req, res) => {
 
 // render login page
 app.get("/login", (req, res) => {
-	if (!req.cookies["user_id"]) {
-	  const templateVars = {
-	    username: req.cookies["user_id"]
-	  };
-	  res.render("login", templateVars);
-	}
-	res.redirect('/urls')
+  if (!req.cookies["user_id"]) {
+    const templateVars = {
+      username: req.cookies["user_id"]
+    };
+    res.render("login", templateVars);
+  }
+  res.redirect('/urls');
 });
 
 // process user login
@@ -135,36 +134,36 @@ app.post("/logout", (req, res) => {
 // render page to add new url
 app.get("/urls/new", (req, res) => {
 
-	const templateVars = {
-		username: users[req.cookies["user_id"]].email
-	};
+  const templateVars = {
+    username: users[req.cookies["user_id"]].email
+  };
 
-	res.render("urls_new", templateVars);
+  res.render("urls_new", templateVars);
 
 });
 
 // render all urls index
 app.get("/urls", (req, res) => {
 
-	const templateVars = {
-		username: users[req.cookies["user_id"]].email,
-		urls: myUrls(req.cookies["user_id"],urlDatabase)
-	};
+  const templateVars = {
+    username: users[req.cookies["user_id"]].email,
+    urls: myUrls(req.cookies["user_id"],urlDatabase)
+  };
 
-	res.render("urls_index", templateVars);
+  res.render("urls_index", templateVars);
 
 });
 
 // render individual url
 app.get("/urls/:shortURL", (req, res) => {
 
-	const templateVars = {
-		username: users[req.cookies["user_id"]].email,
-		shortURL: req.params.shortURL,
-		longURL: urlDatabase[req.params.shortURL].longURL
-	};
+  const templateVars = {
+    username: users[req.cookies["user_id"]].email,
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL].longURL
+  };
 
-	res.render("urls_show", templateVars);
+  res.render("urls_show", templateVars);
 
 });
 
@@ -179,7 +178,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // process short to longURL redirect
 app.get("/u/:shortURL", (req, res) => {
-	const shortURL = req.params.shortURL;
+  const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
@@ -188,22 +187,22 @@ app.get("/u/:shortURL", (req, res) => {
 // process the newly added URL
 app.post("/urls", (req, res) => {
 
-	const tinyURL = guid(urlDatabase);
+  const tinyURL = guid(urlDatabase);
 
-	urlDatabase[tinyURL] = {
-		longurl: req.body.longURL,
-		userID: req.cookies["user_id"]
-	}
+  urlDatabase[tinyURL] = {
+    longurl: req.body.longURL,
+    userID: req.cookies["user_id"]
+  };
 
-	res.redirect(`/urls/${tinyURL}`);
+  res.redirect(`/urls/${tinyURL}`);
 
 });
 
 // update existing longURL
 app.post("/urls/:id", (req, res) => {
 
-		urlDatabase[req.params.id] = req.body.longURL;
-		res.redirect(`/urls`);
+  urlDatabase[req.params.id] = req.body.longURL;
+  res.redirect(`/urls`);
 
 });
 
@@ -212,5 +211,5 @@ app.post("/urls/:id", (req, res) => {
 app activation
 */
 app.listen(PORT, () => {
-	console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Example app listening on port ${PORT}!`);
 });

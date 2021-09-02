@@ -2,11 +2,11 @@
 const guid = (obj) => {
   const uid = Math.random().toString(36).substring(2, 8);
   if (uid in obj) {
-    generateRandomString();
+    guid();
   }
   return uid;
 };
 
 module.exports = {
-	guid
-}
+  guid
+};

@@ -10,5 +10,5 @@ const userExists = (emailAddr, db) => {
 
 
 module.exports = {
-	userExists
-}
+  userExists
+};

@@ -5,5 +5,5 @@ const validPassword = input => {
 };
 
 module.exports = {
-	validPassword,
-}
+  validPassword,
+};
