@@ -1,8 +1,17 @@
-// initialize constants for the server
-const express = require("express");
-const cookieParser = require('cookie-parser');
+// initialize helpers
+const { validPassword } = require('./helpers/passwordValidator');
+const { validEmail } = require('./helpers/emailValidator');
+const { userExists } = require('./helpers/findUser');
+const { myUrls } = require('./helpers/myUrls');
+const { guid } = require('./helpers/guid');
+
+// express app configuration and initialization
+const express = require('express');
 const app = express();
 const PORT = 8080; // default port 8080
+
+// initialize thirdparty packages
+const cookieParser = require('cookie-parser');
 
 // middleware configuration
 app.use(express.static(__dirname + '/public'));
@@ -43,45 +52,6 @@ const users = {
 };
 
 
-/*
-	app functions
-*/
-
-// generate a unique ID
-const generateRandomString = (obj) => {
-  const uid = Math.random().toString(36).substring(2, 8);
-  if (uid in obj) {
-    generateRandomString();
-  }
-  return uid;
-};
-
-const userExists = (emailAddr, db) => {
-  for (let userId in db) {
-    if (db[userId].email === emailAddr) {
-      return db[userId]; // return the user object
-    }
-  }
-  return false;
-};
-
-const validEmail = emailAddr => {
-  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(String(emailAddr).toLowerCase());
-};
-
-const validPassword = input => {
-  const pwRegex =  /^[A-Za-z]\w{0,20}$/;
-  return (input !== undefined && input.match(pwRegex) ? true : false);
-};
-
-const myUrls = (id, obj) => {
-  const urls = {};
-	Object.keys(obj).filter(x => obj[x].userID === id).forEach(key => {
-    urls[key] = obj[key];
-  });
-  return urls;
-}
 
 
 /*
@@ -114,7 +84,7 @@ app.post("/register", (req, res) => {
     return res.status(422).send('password is invalid').end();
   }
 
-  const id = generateRandomString(users);
+  const id = guid(users);
 	
   users[id] = {
     id,
@@ -226,7 +196,7 @@ app.get("/u/:shortURL", (req, res) => {
 // process the newly added URL
 app.post("/urls", (req, res) => {
 	if (req.cookies["user_id"]) {
-		const tinyURL = generateRandomString(urlDatabase);
+		const tinyURL = guid(urlDatabase);
 	  urlDatabase[tinyURL] = {
 			longurl: req.body.longURL,
 			userID: req.cookies["user_id"]
