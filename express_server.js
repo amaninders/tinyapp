@@ -1,29 +1,61 @@
-// initialize modules and constants
+// initialize constants for the server
 const express = require("express");
 const cookieParser = require('cookie-parser')
 const app = express();
 const PORT = 8080; // default port 8080
+
+// middleware configuration
+app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
-// set view engine to ejs
 app.set('view engine','ejs');
 
 
+
+/*
+	app databases
+*/
+
+// url database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
+
+
+/* 
+	app functions
+*/
+
+// generate a unique ID
 const generateRandomString = () => {
   return Math.random().toString(36).substring(2, 8);
 };
 
+
+
+/* 
+	Route definitions 
+*/
+
+
+// short to longURL redirect
+app.get("/register", (req, res) => {
+	const templateVars = { 
+		username: req.cookies["username"],
+	};
+  res.render("register", templateVars);
+});
+
+// short to longURL redirect
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   res.redirect(longURL);
 });
 
+// index page with all urls
 app.get("/urls", (req, res) => {
   const templateVars = { 
 		username: req.cookies["username"],
@@ -32,6 +64,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// new url page
 app.get("/urls/new", (req, res) => {
 	const templateVars = { 
 		username: req.cookies["username"],
@@ -39,6 +72,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+// short url page
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
 		username: req.cookies["username"],
@@ -48,34 +82,43 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// login
 app.post("/login", (req, res) => {
   res.cookie('username', req.body.username);
   res.redirect(`/urls`);
 });
 
+// logout
 app.post("/logout", (req, res) => {
   res.clearCookie('username')
   res.redirect(`/urls`);
 });
 
+// create a new short url
 app.post("/urls", (req, res) => {
   const tinyURL = generateRandomString();
   urlDatabase[tinyURL] = req.body.longURL;
   res.redirect(`/urls/${tinyURL}`);
 });
 
+// update longURL 
 app.post("/urls/:id", (req, res) => {
   urlDatabase[req.params.id] = req.body.longURL;
   res.redirect(`/urls`);
 });
 
-
+// delete url key:value
 app.post("/urls/:id/delete", (req, res) => {
   // delete given property/url from the object
 	delete urlDatabase[req.params.id];
 	res.redirect(`/urls`)
 });
 
+
+
+/* 
+	app activation
+*/
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
