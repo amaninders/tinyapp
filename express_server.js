@@ -28,7 +28,6 @@ app.all('/urls*', function(req, res, next) {
   if (req.cookies["user_id"]) {
     next(); // pass control to the next handler
   }
-  console.log('my middleware worked');
   res.redirect('/login');
 });
 
@@ -54,7 +53,7 @@ app.get("/register", (req, res) => {
     const templateVars = {
       username: req.cookies["user_id"]
     };
-    res.render("register", templateVars);
+    return res.render("register", templateVars);
   }
   res.redirect('/urls');
 });
@@ -99,7 +98,7 @@ app.get("/login", (req, res) => {
     const templateVars = {
       username: req.cookies["user_id"]
     };
-    res.render("login", templateVars);
+    return res.render("login", templateVars);
   }
   res.redirect('/urls');
 });
