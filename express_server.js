@@ -25,6 +25,14 @@ app.use(cookieParser());
 app.set('view engine','ejs');
 
 
+app.all('/urls*', function (req, res, next) {
+  if (req.cookies["user_id"]) {
+		next(); // pass control to the next handler
+	}
+  console.log('my middleware worked')
+  res.redirect('/login') 
+});
+
 /*
 
 	Route definitions
@@ -43,10 +51,13 @@ app.get("/", (req, res) => {
 
 // render register page
 app.get("/register", (req, res) => {
-  const templateVars = {
-    username: req.cookies["user_id"]
-  };
-  res.render("register", templateVars);
+	if (!req.cookies["user_id"]) {
+	  const templateVars = {
+	    username: req.cookies["user_id"]
+	  };
+	  res.render("register", templateVars);
+	}
+	res.redirect('/urls');
 });
 
 
@@ -87,10 +98,13 @@ app.post("/register", (req, res) => {
 
 // render login page
 app.get("/login", (req, res) => {
-  const templateVars = {
-    username: req.cookies["user_id"]
-  };
-  res.render("login", templateVars);
+	if (!req.cookies["user_id"]) {
+	  const templateVars = {
+	    username: req.cookies["user_id"]
+	  };
+	  res.render("login", templateVars);
+	}
+	res.redirect('/urls')
 });
 
 // process user login
@@ -120,54 +134,47 @@ app.post("/logout", (req, res) => {
 
 // render page to add new url
 app.get("/urls/new", (req, res) => {
-	if (req.cookies["user_id"]) {
-		const templateVars = {
-			username: users[req.cookies["user_id"]].email
-		};
-		return res.render("urls_new", templateVars);
-	}
-	res.redirect('/login');
+
+	const templateVars = {
+		username: users[req.cookies["user_id"]].email
+	};
+
+	res.render("urls_new", templateVars);
+
 });
 
 // render all urls index
 app.get("/urls", (req, res) => {
-	
-	if (req.cookies["user_id"]) {
-		const templateVars = {
-			username: users[req.cookies["user_id"]].email,
-			urls: myUrls(req.cookies["user_id"],urlDatabase)
-		};
-		return res.render("urls_index", templateVars);
-	} 
 
-	res.redirect('/login');  
+	const templateVars = {
+		username: users[req.cookies["user_id"]].email,
+		urls: myUrls(req.cookies["user_id"],urlDatabase)
+	};
+
+	res.render("urls_index", templateVars);
 
 });
 
 // render individual url
 app.get("/urls/:shortURL", (req, res) => {
 
-	if (req.cookies["user_id"]) {
-		const templateVars = {
-			username: users[req.cookies["user_id"]].email,
-			shortURL: req.params.shortURL,
-			longURL: urlDatabase[req.params.shortURL].longURL
-		};
-		return res.render("urls_show", templateVars);
-	}
-  res.redirect('/login');
+	const templateVars = {
+		username: users[req.cookies["user_id"]].email,
+		shortURL: req.params.shortURL,
+		longURL: urlDatabase[req.params.shortURL].longURL
+	};
+
+	res.render("urls_show", templateVars);
+
 });
 
 
 // delete existing url
 app.post("/urls/:id/delete", (req, res) => {
-	
-	if (req.cookies["user_id"]) {
-		// delete given property/url from the object
-	  delete urlDatabase[req.params.id];
-	  res.redirect(`/urls`);
-	}
-	res.redirect('/login');
+
+  delete urlDatabase[req.params.id];
+  res.redirect(`/urls`);
+
 });
 
 // process short to longURL redirect
@@ -180,25 +187,24 @@ app.get("/u/:shortURL", (req, res) => {
 
 // process the newly added URL
 app.post("/urls", (req, res) => {
-	if (req.cookies["user_id"]) {
-		const tinyURL = guid(urlDatabase);
-	  urlDatabase[tinyURL] = {
-			longurl: req.body.longURL,
-			userID: req.cookies["user_id"]
-		}
-	  return res.redirect(`/urls/${tinyURL}`);
+
+	const tinyURL = guid(urlDatabase);
+
+	urlDatabase[tinyURL] = {
+		longurl: req.body.longURL,
+		userID: req.cookies["user_id"]
 	}
-	res.redirect('/login');
+
+	res.redirect(`/urls/${tinyURL}`);
+
 });
 
 // update existing longURL
 app.post("/urls/:id", (req, res) => {
 
-	if (req.cookies["user_id"]) {
 		urlDatabase[req.params.id] = req.body.longURL;
-		return res.redirect(`/urls`);
-	}
-	res.redirect('/login');
+		res.redirect(`/urls`);
+
 });
 
 
