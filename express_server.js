@@ -15,7 +15,7 @@ const urlDatabase = {
 };
 
 const generateRandomString = () => {
-  Math.random().toString(36).substring(2, 8);
+  return Math.random().toString(36).substring(2, 8);
 };
 
 app.get("/u/:shortURL", (req, res) => {
@@ -33,7 +33,10 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+	const templateVars = { 
+		username: req.cookies["username"],
+	};
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
