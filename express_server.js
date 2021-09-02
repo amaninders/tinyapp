@@ -68,12 +68,10 @@ app.post("/register", (req, res) => {
 
   if (!validEmail(email)) {
     return res.redirect(401, '/register');
-    // return res.status(422).send('Email is invalid').redirect('/register');
   }
 
   if (userExists(email, users)) {
     return res.status(409).send('Email is already in use').end();
-    // return res.redirect(409, '/register')
   }
 
   if (!validPassword(password)) {
