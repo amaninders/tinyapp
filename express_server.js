@@ -149,11 +149,17 @@ app.post("/logout", (req, res) => {
 
 // render all urls index
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    username: req.cookies["user_id"],
-    urls: urlDatabase
-  };
-  res.render("urls_index", templateVars);
+
+	if (req.cookies["user_id"]) {
+		const templateVars = {
+			username: req.cookies["user_id"],
+			urls: urlDatabase
+		};
+		return res.render("urls_index", templateVars);
+	} 
+
+	res.redirect('/login');  
+
 });
 
 // render individual url
