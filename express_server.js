@@ -44,7 +44,6 @@ const users = {
 // generate a unique ID
 const generateRandomString = (obj) => {
   const uid = Math.random().toString(36).substring(2, 8);
-	console.log(uid);
 	if (uid in obj) {
 		generateRandomString();
 	}
@@ -60,6 +59,15 @@ const userExists = (emailAddr, db) => {
 		return false;
 	};
 
+const validEmail = emailAddr => {
+	const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(emailAddr).toLowerCase());
+}
+
+const validPassword = input => {
+	const pwRegex=  /^[A-Za-z]\w{0,20}$/;
+	return (input !== undefined && input.match(pwRegex) ? true : false)
+}
 /* 
 	Route definitions 
 */
@@ -76,21 +84,32 @@ app.get("/register", (req, res) => {
 // add new user
 app.post("/register", (req, res) => {
 
-	const id = generateRandomString(users);
 	const email = req.body.email;
 	const password = req.body.password;
 
-	if (!userExists(email, users)) {
-		users[id] = {
-			id,
-			email,
-			password
-		}
-
-		console.log(users);
-		res.cookie('user_id', id);
-  	res.redirect("/urls");		
+	if (!validEmail(email)) {
+		return res.status(422).send('Email is invalid').end();
 	}
+
+	if (userExists(email, users)) {
+		return res.status(409).send('A user already exists. Please try the login page').end();
+	}
+
+	if (!validPassword(password)) {
+		return res.status(422).send('password is invalid').end();
+	}
+
+	const id = generateRandomString(users);
+	
+	users[id] = {
+		id,
+		email,
+		password
+	}
+
+	console.log(users);
+	res.cookie('user_id', id);
+	res.redirect("/urls");		
 
 });
 
