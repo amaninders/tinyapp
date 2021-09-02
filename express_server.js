@@ -11,7 +11,6 @@ app.use(cookieParser());
 app.set('view engine','ejs');
 
 
-
 /*
 	app databases
 */
@@ -23,29 +22,76 @@ const urlDatabase = {
 };
 
 
+// users database
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+	}
+}
+
 
 /* 
 	app functions
 */
 
 // generate a unique ID
-const generateRandomString = () => {
-  return Math.random().toString(36).substring(2, 8);
+const generateRandomString = (obj) => {
+  const uid = Math.random().toString(36).substring(2, 8);
+	console.log(uid);
+	if (uid in obj) {
+		generateRandomString();
+	}
+	return uid;
 };
 
-
+const userExists = (emailAddr, db) => {
+		for (let userId in db) {
+			if (db[userId].email === emailAddr) {
+				return db[userId]; // return the user object
+			}
+		}
+		return false;
+	};
 
 /* 
 	Route definitions 
 */
 
 
-// short to longURL redirect
+// register page
 app.get("/register", (req, res) => {
 	const templateVars = { 
 		username: req.cookies["username"],
 	};
   res.render("register", templateVars);
+});
+
+// add new user
+app.post("/register", (req, res) => {
+
+	const id = generateRandomString(users);
+	const email = req.body.email;
+	const password = req.body.password;
+
+	if (!userExists(email, users)) {
+		users[id] = {
+			id,
+			email,
+			password
+		}
+
+		console.log(users);
+		res.cookie('user_id', id);
+  	res.redirect("/urls");		
+	}
+
 });
 
 // short to longURL redirect
@@ -96,7 +142,7 @@ app.post("/logout", (req, res) => {
 
 // create a new short url
 app.post("/urls", (req, res) => {
-  const tinyURL = generateRandomString();
+  const tinyURL = generateRandomString(urlDatabase);
   urlDatabase[tinyURL] = req.body.longURL;
   res.redirect(`/urls/${tinyURL}`);
 });
