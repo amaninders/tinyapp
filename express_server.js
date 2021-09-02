@@ -5,6 +5,10 @@ const { userExists } = require('./helpers/findUser');
 const { myUrls } = require('./helpers/myUrls');
 const { guid } = require('./helpers/guid');
 
+// intialize databases
+const { urlDatabase } = require('./db/urlDb');
+const { users } = require('./db/userDb');
+
 // express app configuration and initialization
 const express = require('express');
 const app = express();
@@ -18,41 +22,6 @@ app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set('view engine','ejs');
-
-
-/*
-	app databases
-*/
-
-// url database
-const urlDatabase = {
-	b6UTxQ: {
-			longURL: "https://www.tsn.ca",
-			userID: "aJ48lW"
-	},
-	i3BoGr: {
-			longURL: "https://www.google.ca",
-			userID: "userRandomID"
-	}
-};
-
-
-// users database
-const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  }
-};
-
-
-
 
 /*
 	Route definitions
