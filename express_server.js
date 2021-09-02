@@ -12,6 +12,7 @@ const { users } = require('./db/userDb');
 // express app configuration and initialization
 const express = require('express');
 const app = express();
+const router = express.Router();
 const PORT = 8080; // default port 8080
 
 // initialize thirdparty packages
@@ -23,9 +24,22 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set('view engine','ejs');
 
+
 /*
+
 	Route definitions
+
 */
+
+
+// route for root of the project
+app.get("/", (req, res) => {
+	if (req.cookies["user_id"]) {
+		return res.redirect('/urls')
+	}
+  res.redirect('/login')
+});
+
 
 // render register page
 app.get("/register", (req, res) => {
@@ -35,6 +49,7 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
+
 // process user registration
 app.post("/register", (req, res) => {
 
@@ -42,15 +57,17 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
 
   if (!validEmail(email)) {
-    return res.status(422).send('Email is invalid').end();
+		return res.redirect(401, '/register')
+    // return res.status(422).send('Email is invalid').redirect('/register');
   }
 
   if (userExists(email, users)) {
-    return res.status(409).send('A user already exists. Please try the login page').end();
+		return res.status(409).send('Email is already in use').end();
+    // return res.redirect(409, '/register')
   }
 
   if (!validPassword(password)) {
-    return res.status(422).send('password is invalid').end();
+    return res.redirect(40, '/register')
   }
 
   const id = guid(users);
@@ -64,6 +81,7 @@ app.post("/register", (req, res) => {
   console.log(users);
   res.cookie('user_id', id);
   res.redirect("/urls");
+
 });
 
 
@@ -102,12 +120,10 @@ app.post("/logout", (req, res) => {
 
 // render page to add new url
 app.get("/urls/new", (req, res) => {
-	console.log('I am here')
 	if (req.cookies["user_id"]) {
 		const templateVars = {
 			username: users[req.cookies["user_id"]].email
 		};
-		console.log('hello')
 		return res.render("urls_new", templateVars);
 	}
 	res.redirect('/login');
@@ -157,7 +173,7 @@ app.post("/urls/:id/delete", (req, res) => {
 // process short to longURL redirect
 app.get("/u/:shortURL", (req, res) => {
 	const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
 
