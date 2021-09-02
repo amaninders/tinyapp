@@ -75,7 +75,7 @@ const validPassword = input => {
 // render register page
 app.get("/register", (req, res) => {
 	const templateVars = { 
-		username: req.cookies["username"],
+		username: req.cookies["user_id"],
 	};
   res.render("register", templateVars);
 });
@@ -115,7 +115,7 @@ app.post("/register", (req, res) => {
 // render login page
 app.get("/login", (req, res) => {
 	const templateVars = { 
-		username: req.cookies["username"],
+		username: req.cookies["user_id"],
 	};
   res.render("login", templateVars);
 });
@@ -150,7 +150,7 @@ app.post("/logout", (req, res) => {
 // render all urls index
 app.get("/urls", (req, res) => {
   const templateVars = { 
-		username: req.cookies["username"],
+		username: req.cookies["user_id"],
 		urls: urlDatabase 
 	};
   res.render("urls_index", templateVars);
@@ -159,7 +159,7 @@ app.get("/urls", (req, res) => {
 // render individual url
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
-		username: req.cookies["username"],
+		username: req.cookies["user_id"],
 		shortURL: req.params.shortURL, 
 		longURL: urlDatabase[req.params.shortURL] 
 	};
@@ -189,7 +189,7 @@ app.get("/u/:shortURL", (req, res) => {
 // render page to add new url
 app.get("/urls/new", (req, res) => {
 	const templateVars = { 
-		username: req.cookies["username"],
+		username: req.cookies["user_id"],
 	};
   res.render("urls_new", templateVars);
 });
