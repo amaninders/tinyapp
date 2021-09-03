@@ -1,6 +1,6 @@
 // returns urls based on the userID
 
-const myUrls = (id, obj) => {
+const findMyURLs = (id, obj) => {
   const urls = {};
   Object.keys(obj).filter(x => obj[x].userID === id).forEach(key => {
     urls[key] = obj[key];
@@ -9,5 +9,5 @@ const myUrls = (id, obj) => {
 };
 
 module.exports = {
-  myUrls
+  findMyURLs
 };
