@@ -57,7 +57,7 @@ app.all('/urls*', function(req, res, next) {
 app.all('/login*', function(req, res, next) {
 
   if (req.cookies["user_id"]) {
-		res.redirect('/urls')
+		return res.redirect('/urls')
   }
 	next(); 
 });
@@ -66,7 +66,7 @@ app.all('/login*', function(req, res, next) {
 app.all('/register*', function(req, res, next) {
 
   if (req.cookies["user_id"]) {
-		res.redirect('/urls')
+		return res.redirect('/urls')
   }
 	next(); 
 });
@@ -98,15 +98,21 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
 
   if (!validEmail(email)) {
-    return res.redirect(401, '/register');
+		res.status(401);
+		res.render('error', { error: '401', msg: 'The given email address is not valid', returnTo: '/register'});
+		return;
   }
   if (userExists(email, userDB)) {
-    return res.status(409).send('Email is already in use').end();
+		res.status(409);
+		res.render('error', { error: '409', msg: 'Someone on some planet is already using this email address', returnTo: '/register'});
+		return;
   }
-  if (!validPassword(password)) {
-    return res.redirect(401, '/register');
+  if (!validPassword(password)) {    
+		res.status(401);
+		res.render('error', { error: '401', msg: 'We need a stronger password like gravity', returnTo: '/register'});
+		return;
   }
-  const id = guid(users);
+  const id = guid(userDB);
 
   userDB[id] = {
     id,
@@ -138,10 +144,14 @@ app.post("/login", (req, res) => {
   const user = userExists(email,userDB);
 
   if (!user) {
-    return res.status(403).send("There's no account with this email address! Please register").end();
+    res.status(403);
+		res.render('error', { error: '403', msg: 'There is no account with this email address! Please register', returnTo: '/register'});
+		return;
   }
   if (user.password !== password) {
-    return res.status(403).send("Incorrect email/password combination - please check!").end();
+    res.status(403);
+		res.render('error', { error: '403', msg: 'Invalid credentials can make your head spin', returnTo: '/login'});
+		return;
   }
 
   res.cookie('user_id', user.id);
@@ -211,11 +221,11 @@ app.get("/urls/:id", (req, res) => {
 			longURL: urls[tinyURL].longURL
 		};
 	
-		return res.render("urls_show", templateVars);	
-
+		res.render("urls_show", templateVars);	
+		return;
 	}
 
-	res.redirect('/error'); // to be implemented
+	res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
 
 });
 
@@ -233,12 +243,13 @@ app.post("/urls/:id/delete", (req, res) => {
 			username: users[user].email,
 			longURL: urls[tinyURL].longURL
 		};
-	delete urlDB[req.params.id];
+		delete urlDB[req.params.id];
   
-	res.redirect(`/urls`);
+		res.redirect(`/urls`);
+		return;
 	}
 
-	res.redirect('/error') // to be implemented
+	res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
 
 });
 
@@ -259,9 +270,10 @@ app.post("/urls/:id", (req, res) => {
 
 	  urlDB[tinyURL].longURL = req.body.longURL;
 	  res.redirect(`/urls`);
+		return
 	}
 
-	res.redirect('/error')
+	res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
 
 });
 
