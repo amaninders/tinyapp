@@ -1,15 +1,21 @@
+/* 
+ * ===================
+ * express_server.js
+ * ===================
+ */
+
 // initialize helpers
 const { validPassword } = require('./helpers/passwordValidator');
 const { validEmail } = require('./helpers/emailValidator');
 const { userExists } = require('./helpers/findUser');
-const { myUrls } = require('./helpers/myUrls');
+const { findMyURLs } = require('./helpers/myUrls');
 const { guid } = require('./helpers/guid');
 
 // intialize databases
-const { urlDatabase } = require('./db/urlDb');
-const { users } = require('./db/userDb');
+const { urlDB } = require('./db/urlDb');
+const { userDB } = require('./db/userDb');
 
-// express app configuration and initialization
+// app initialization
 const express = require('express');
 const app = express();
 const PORT = 8080; // default port 8080
@@ -17,45 +23,19 @@ const PORT = 8080; // default port 8080
 // initialize thirdparty packages
 const cookieParser = require('cookie-parser');
 
-// middleware configuration
+// app configuration
 app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set('view engine','ejs');
 
 
+/* 
+ * ===================
+ *  	ROUTE METHODS
+ * ===================
+ */
 
-/*
-
-Route definitions
-
-*/
-
-// user login check for routes leading to /url*
-app.all('/urls*', function(req, res, next) {
-  if (!req.cookies["user_id"]) {
-  	return res.redirect('/login');
-  }
-	next(); // pass control to the next handler
-});
-
-// user login check for routes leading to /login*
-app.all('/login*', function(req, res, next) {
-
-  if (req.cookies["user_id"]) {
-		res.redirect('/urls')
-  }
-	next(); // pass control to the next handler  
-});
-
-// user login check for routes leading to /register*
-app.all('/register*', function(req, res, next) {
-
-  if (req.cookies["user_id"]) {
-		res.redirect('/urls')
-  }
-	next(); // pass control to the next handler  
-});
 
 // route for root of the project
 app.get("/", (req, res) => {
@@ -65,20 +45,53 @@ app.get("/", (req, res) => {
   res.redirect('/login');
 });
 
+// user login check for routes leading to /url*
+app.all('/urls*', function(req, res, next) {
+  if (!req.cookies["user_id"]) {
+  	return res.redirect('/login');
+  }
+	next(); 
+});
 
-// render register page
-app.get("/register", (req, res) => {
-  
-	const templateVars = {
-    username: req.cookies["user_id"]
-  };
-		
-	res.render("register", templateVars);
-	
+// user login check for routes leading to /login*
+app.all('/login*', function(req, res, next) {
+
+  if (req.cookies["user_id"]) {
+		res.redirect('/urls')
+  }
+	next(); 
+});
+
+// user login check for routes leading to /register*
+app.all('/register*', function(req, res, next) {
+
+  if (req.cookies["user_id"]) {
+		res.redirect('/urls')
+  }
+	next(); 
 });
 
 
-// process user registration
+
+/* 
+ * ===================
+ *  ROUTE DEFINITIONS
+ * ===================
+ */
+
+
+// Register
+// render register form
+app.get("/register", (req, res) => { 
+	const templateVars = {
+    username: req.cookies["user_id"]
+  };
+	res.render("register", templateVars);
+});
+
+
+// Register
+// process register form
 app.post("/register", (req, res) => {
 
   const email = req.body.email;
@@ -87,103 +100,95 @@ app.post("/register", (req, res) => {
   if (!validEmail(email)) {
     return res.redirect(401, '/register');
   }
-
-  if (userExists(email, users)) {
+  if (userExists(email, userDB)) {
     return res.status(409).send('Email is already in use').end();
   }
-
   if (!validPassword(password)) {
     return res.redirect(401, '/register');
   }
-
   const id = guid(users);
-	
-  users[id] = {
+
+  userDB[id] = {
     id,
     email,
     password
   };
 
-  console.log(users);
-  res.cookie('user_id', id);
+	res.cookie('user_id', id);
   res.redirect("/urls");
-
 });
 
 
-// render login page
-app.get("/login", (req, res) => {
 
+// Login
+// render login form
+app.get("/login", (req, res) => {
   const templateVars = {
     username: req.cookies["user_id"]
   };
-
 	res.render("login", templateVars);
-
 });
 
-// process user login
+
+// Login
+// process login form
 app.post("/login", (req, res) => {
-	
   const email = req.body.email;
   const password = req.body.password;
-  const user = userExists(email,users);
+  const user = userExists(email,userDB);
 
   if (!user) {
     return res.status(403).send("There's no account with this email address! Please register").end();
   }
-
   if (user.password !== password) {
     return res.status(403).send("Incorrect email/password combination - please check!").end();
   }
 
   res.cookie('user_id', user.id);
   res.redirect("/urls");
-
 });
 
-// process user logout
-app.post("/logout", (req, res) => {
-  
+
+// Logout
+// process logout request
+app.post("/logout", (req, res) => {  
 	res.clearCookie('user_id');
   res.redirect(`/urls`);
-
 });
 
+
+
+// URLS
 // render page to add new url
 app.get("/urls/new", (req, res) => {
-
   const templateVars = {
-    username: users[req.cookies["user_id"]].email
+    username: userDB[req.cookies["user_id"]].email
   };
-
   res.render("urls_new", templateVars);
-
 });
 
-// render all urls index
+// URLS
+// render all urls on a page
 app.get("/urls", (req, res) => {
-
 	const user = req.cookies["user_id"];
-	const urls = myUrls(user,urlDatabase);
+	const urls = findMyURLs(user,urlDB);
   const templateVars = {
 		urls,
-    username: users[user].email
+    username: userDB[user].email
   };
-
   res.render("urls_index", templateVars);
-
 });
 
-
-// process the newly added URL
+// URLS
+// process a new url
 app.post("/urls", (req, res) => {
 
-  const tinyURL = guid(urlDatabase);
+  const tinyURL = guid(urlDB);
 	const user = req.cookies["user_id"];
+	const longURL = req.body.longURL
 
-  urlDatabase[tinyURL] = {
-    longurl: req.body.longURL,
+  urlDB[tinyURL] = {
+    longURL,
     userID: user
   };
 
@@ -191,19 +196,19 @@ app.post("/urls", (req, res) => {
 
 });
 
-
-// render individual url
+// URLS
+// render a single url on its own page
 app.get("/urls/:id", (req, res) => {
 
-	const shortURL = req.params.id
+	const tinyURL = req.params.id
 	const user = req.cookies["user_id"]
-	const urls = myUrls(user,urlDatabase);
+	const urls = findMyURLs(user,urlDB);
 
-	if (shortURL in urls) {
+	if (tinyURL in urls) {
 		const templateVars = {
-			shortURL,
-			username: users[user].email,
-			longURL: urls[shortURL].longURL
+			shortURL: tinyURL,
+			username: userDB[user].email,
+			longURL: urls[tinyURL].longURL
 		};
 	
 		return res.render("urls_show", templateVars);	
@@ -214,20 +219,21 @@ app.get("/urls/:id", (req, res) => {
 
 });
 
-// delete existing url
+// URLS
+// delete an existing url
 app.post("/urls/:id/delete", (req, res) => {
 
-	const shortURL = req.params.id
+	const tinyURL = req.params.id
 	const user = req.cookies["user_id"]
-	const urls = myUrls(user,urlDatabase);
+	const urls = findMyURLs(user,urlDB);
 
-	if (shortURL in urls) {
+	if (tinyURL in urls) {
 		const templateVars = {
-			shortURL,
+			shortURL: tinyURL,
 			username: users[user].email,
-			longURL: urls[shortURL].longURL
+			longURL: urls[tinyURL].longURL
 		};
-	delete urlDatabase[req.params.id];
+	delete urlDB[req.params.id];
   
 	res.redirect(`/urls`);
 	}
@@ -236,21 +242,22 @@ app.post("/urls/:id/delete", (req, res) => {
 
 });
 
-// update existing longURL
+// URLS
+// update an existing longURL
 app.post("/urls/:id", (req, res) => {
 
-	const shortURL = req.params.id
+	const tinyURL = req.params.id
 	const user = req.cookies["user_id"]
-	const urls = myUrls(user,urlDatabase);
+	const urls = findMyURLs(user,urlDB);
 
-	if (shortURL in urls) {
+	if (tinyURL in urls) {
 		const templateVars = {
-			shortURL,
-			username: users[user].email,
-			longURL: urls[shortURL].longURL
+			shortURL: tinyURL,
+			username: userDB[user].email,
+			longURL: urls[tinyURL].longURL
 		};
 
-	  urlDatabase[req.params.id] = req.body.longURL;
+	  urlDB[tinyURL].longURL = req.body.longURL;
 	  res.redirect(`/urls`);
 	}
 
@@ -258,16 +265,22 @@ app.post("/urls/:id", (req, res) => {
 
 });
 
-// process short to longURL redirect
+// URLS 
+// redirect to longURL when someone accesses short url with u/:id
 app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL;
+  const tinyURL = req.params.shortURL;
+	console.log(urlDB[tinyURL]);
+  const longURL = urlDB[tinyURL].longURL;
   res.redirect(longURL);
 });
 
-/*
-app activation
-*/
+
+
+/* 
+ * ===================
+ *  APP ACTIVATION
+ * ===================
+ */
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
