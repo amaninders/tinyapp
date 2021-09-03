@@ -1,5 +1,5 @@
 // url database
-const urlDatabase = {
+const urlDB = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
     userID: "aJ48lW"
@@ -11,5 +11,5 @@ const urlDatabase = {
 };
 
 module.exports = {
-  urlDatabase
+  urlDB
 };
