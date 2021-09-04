@@ -46,7 +46,6 @@ app.set('view engine','ejs');
 // route for root of the project
 app.get("/", (req, res) => {
   if (req.session.user_id) {
-    console.log(userDB);
     return res.redirect('/urls');
   }
   res.redirect('/login');
@@ -281,7 +280,6 @@ app.post("/urls/:id", (req, res) => {
 // redirect to longURL when someone accesses short url with u/:id
 app.get("/u/:shortURL", (req, res) => {
   const tinyURL = req.params.shortURL;
-  console.log(urlDB[tinyURL]);
   const longURL = urlDB[tinyURL].longURL;
   res.redirect(addHttp(longURL));
 });
