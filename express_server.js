@@ -10,6 +10,7 @@ const { validEmail } = require('./helpers/emailValidator');
 const { userExists } = require('./helpers/findUser');
 const { findMyURLs } = require('./helpers/myUrls');
 const { guid } = require('./helpers/guid');
+const bcrypt = require('bcrypt');
 
 // intialize databases
 const { urlDB } = require('./db/urlDb');
@@ -40,6 +41,7 @@ app.set('view engine','ejs');
 // route for root of the project
 app.get("/", (req, res) => {
   if (req.cookies["user_id"]) {
+		console.log(userDB);
     return res.redirect('/urls');
   }
   res.redirect('/login');
@@ -113,11 +115,12 @@ app.post("/register", (req, res) => {
     return;
   }
   const id = guid(userDB);
+	
 
   userDB[id] = {
     id,
     email,
-    password
+    password : bcrypt.hashSync(password,10)
   };
 
   res.cookie('user_id', id);
@@ -148,14 +151,16 @@ app.post("/login", (req, res) => {
     res.render('error', { error: '403', msg: 'There is no account with this email address! Please register', returnTo: '/register'});
     return;
   }
-  if (user.password !== password) {
-    res.status(403);
-    res.render('error', { error: '403', msg: 'Invalid credentials can make your head spin', returnTo: '/login'});
-    return;
-  }
-
-  res.cookie('user_id', user.id);
-  res.redirect("/urls");
+	console.log(user.password);
+	bcrypt.compare(password, user.password, function(err) {
+    if (err) {
+			res.status(403);
+    	res.render('error', { error: '403', msg: 'Invalid credentials can make your head spin', returnTo: '/login'});
+    	return;
+		}
+		res.cookie('user_id', user.id);
+  	res.redirect("/urls");
+	});  
 });
 
 
