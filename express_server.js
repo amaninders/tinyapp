@@ -5,12 +5,11 @@
  */
 
 // initialize helpers
-const { validPassword } = require('./helpers/passwordValidator');
-const { validEmail } = require('./helpers/emailValidator');
-const { userExists } = require('./helpers/findUser');
-const { findMyURLs } = require('./helpers/myUrls');
 const { guid } = require('./helpers/guid');
-const bcrypt = require('bcrypt');
+const { findMyURLs } = require('./helpers/myUrls');
+const { userExists } = require('./helpers/findUser');
+const { validEmail } = require('./helpers/emailValidator');
+const { validPassword } = require('./helpers/passwordValidator');
 
 // intialize databases
 const { urlDB } = require('./db/urlDb');
@@ -22,12 +21,18 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 // initialize thirdparty packages
+const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session')
 
 // app configuration
+// app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['firstEncryptionKey', 'secondEncryptionKey']
+}))
 app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({extended: true}));
-app.use(cookieParser());
 app.set('view engine','ejs');
 
 
@@ -40,7 +45,7 @@ app.set('view engine','ejs');
 
 // route for root of the project
 app.get("/", (req, res) => {
-  if (req.cookies["user_id"]) {
+  if (req.session.user_id) {
 		console.log(userDB);
     return res.redirect('/urls');
   }
@@ -49,7 +54,7 @@ app.get("/", (req, res) => {
 
 // user login check for routes leading to /url*
 app.all('/urls*', function(req, res, next) {
-  if (!req.cookies["user_id"]) {
+  if (!req.session.user_id) {
     return res.redirect('/login');
   }
   next();
@@ -58,7 +63,7 @@ app.all('/urls*', function(req, res, next) {
 // user login check for routes leading to /login*
 app.all('/login*', function(req, res, next) {
 
-  if (req.cookies["user_id"]) {
+  if (req.session.user_id) {
     return res.redirect('/urls');
   }
   next();
@@ -67,7 +72,7 @@ app.all('/login*', function(req, res, next) {
 // user login check for routes leading to /register*
 app.all('/register*', function(req, res, next) {
 
-  if (req.cookies["user_id"]) {
+  if (req.session.user_id) {
     return res.redirect('/urls');
   }
   next();
@@ -86,7 +91,7 @@ app.all('/register*', function(req, res, next) {
 // render register form
 app.get("/register", (req, res) => {
   const templateVars = {
-    username: req.cookies["user_id"]
+    username: req.session.user_id
   };
   res.render("register", templateVars);
 });
@@ -120,10 +125,10 @@ app.post("/register", (req, res) => {
   userDB[id] = {
     id,
     email,
-    password : bcrypt.hashSync(password,10)
+    password : bcrypt.hashSync(password,10) // we store the hash of password instead of plain text
   };
 
-  res.cookie('user_id', id);
+  req.session.user_id = id;
   res.redirect("/urls");
 });
 
@@ -133,7 +138,7 @@ app.post("/register", (req, res) => {
 // render login form
 app.get("/login", (req, res) => {
   const templateVars = {
-    username: req.cookies["user_id"]
+    username: req.session.user_id
   };
   res.render("login", templateVars);
 });
@@ -151,14 +156,15 @@ app.post("/login", (req, res) => {
     res.render('error', { error: '403', msg: 'There is no account with this email address! Please register', returnTo: '/register'});
     return;
   }
-	console.log(user.password);
+
 	bcrypt.compare(password, user.password, function(err) {
     if (err) {
 			res.status(403);
     	res.render('error', { error: '403', msg: 'Invalid credentials can make your head spin', returnTo: '/login'});
     	return;
 		}
-		res.cookie('user_id', user.id);
+		// res.cookie('user_id', user.id);
+		req.session.user_id = user.id;
   	res.redirect("/urls");
 	});  
 });
@@ -167,7 +173,7 @@ app.post("/login", (req, res) => {
 // Logout
 // process logout request
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect(`/urls`);
 });
 
@@ -177,7 +183,7 @@ app.post("/logout", (req, res) => {
 // render page to add new url
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: userDB[req.cookies["user_id"]].email
+    username: userDB[req.session.user_id].email
   };
   res.render("urls_new", templateVars);
 });
@@ -185,7 +191,7 @@ app.get("/urls/new", (req, res) => {
 // URLS
 // render all urls on a page
 app.get("/urls", (req, res) => {
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
   const urls = findMyURLs(user,urlDB);
   const templateVars = {
     urls,
@@ -199,7 +205,7 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
 
   const tinyURL = guid(urlDB);
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
   const longURL = req.body.longURL;
 
   urlDB[tinyURL] = {
@@ -216,7 +222,7 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
 
   const tinyURL = req.params.id;
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
   const urls = findMyURLs(user,urlDB);
 
   if (tinyURL in urls) {
@@ -239,7 +245,7 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
 
   const tinyURL = req.params.id;
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
   const urls = findMyURLs(user,urlDB);
 
   if (tinyURL in urls) {
@@ -258,7 +264,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id", (req, res) => {
 
   const tinyURL = req.params.id;
-  const user = req.cookies["user_id"];
+  const user = req.session.user_id;
   const urls = findMyURLs(user,urlDB);
 
   if (tinyURL in urls) {
@@ -275,7 +281,6 @@ app.post("/urls/:id", (req, res) => {
 // redirect to longURL when someone accesses short url with u/:id
 app.get("/u/:shortURL", (req, res) => {
   const tinyURL = req.params.shortURL;
-  console.log(urlDB[tinyURL]);
   const longURL = urlDB[tinyURL].longURL;
   res.redirect(longURL);
 });
