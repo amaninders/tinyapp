@@ -6,6 +6,7 @@
 
 // initialize helpers
 const { guid } = require('./helpers/guid');
+const { addHttp } = require('./helpers/addHttp');
 const { findMyURLs } = require('./helpers/myUrls');
 const { userExists } = require('./helpers/findUser');
 const { validEmail } = require('./helpers/emailValidator');
@@ -281,8 +282,9 @@ app.post("/urls/:id", (req, res) => {
 // redirect to longURL when someone accesses short url with u/:id
 app.get("/u/:shortURL", (req, res) => {
   const tinyURL = req.params.shortURL;
+	console.log(urlDB[tinyURL]);
   const longURL = urlDB[tinyURL].longURL;
-  res.redirect(longURL);
+  res.redirect(addHttp(longURL));
 });
 
 
