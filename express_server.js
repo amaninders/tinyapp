@@ -24,6 +24,7 @@ const PORT = 8080; // default port 8080
 // initialize thirdparty packages
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
+const { getLinkPreview, getPreviewFromContent } = require('link-preview-js');
 
 // app configuration
 // app.use(cookieParser());
@@ -51,8 +52,18 @@ app.get("/", (req, res) => {
   res.redirect('/login');
 });
 
-// user login check for routes leading to /url*
-app.all('/urls*', function(req, res, next) {
+// user login check for routes leading to /urls
+app.all('/urls', function(req, res, next) {
+  if (!req.session.user_id) {
+		res.status(401);
+    res.render('error', { error: '401', msg: 'Please sign in for a home run', returnTo: '/login'});
+    return;
+  }
+  next();
+});
+
+// user login check for routes leading to /urls/*
+app.all('/urls/*', function(req, res, next) {
   if (!req.session.user_id) {
     return res.redirect('/login');
   }
@@ -225,17 +236,29 @@ app.get("/urls/:id", (req, res) => {
   const urls = findMyURLs(user,urlDB);
 
   if (tinyURL in urls) {
-    const templateVars = {
-      shortURL: tinyURL,
-      username: userDB[user].email,
-      longURL: urls[tinyURL].longURL
-    };
-	
-    res.render("urls_show", templateVars);
-    return;
+
+		getLinkPreview(urls[tinyURL].longURL, {
+			imagesPropertyType: "og", // fetches only open-graph images
+			headers: {
+				"user-agent": "googlebot", // fetches with googlebot crawler user agent
+			},
+		}).then(data => {
+			const templateVars = {
+				shortURL: tinyURL,
+				username: userDB[user].email,
+				longURL: urls[tinyURL].longURL,
+			  description: data.description,
+			  mediaType: data.mediaType,
+			  contentType: data.contentType,
+			  images: data.images,
+			};
+			console.log(templateVars);
+			res.render("urls_show", templateVars);
+		});
+		return;
   }
 
-  res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
+  res.render('error', { error: '401', msg: 'Seems like this url was consumed by a black hole and we cannot find it', returnTo: '/'});
 
 });
 
