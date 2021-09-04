@@ -1,4 +1,4 @@
-/* 
+/*
  * ===================
  * express_server.js
  * ===================
@@ -30,7 +30,7 @@ app.use(cookieParser());
 app.set('view engine','ejs');
 
 
-/* 
+/*
  * ===================
  *  	ROUTE METHODS
  * ===================
@@ -48,32 +48,32 @@ app.get("/", (req, res) => {
 // user login check for routes leading to /url*
 app.all('/urls*', function(req, res, next) {
   if (!req.cookies["user_id"]) {
-  	return res.redirect('/login');
+    return res.redirect('/login');
   }
-	next(); 
+  next();
 });
 
 // user login check for routes leading to /login*
 app.all('/login*', function(req, res, next) {
 
   if (req.cookies["user_id"]) {
-		return res.redirect('/urls')
+    return res.redirect('/urls');
   }
-	next(); 
+  next();
 });
 
 // user login check for routes leading to /register*
 app.all('/register*', function(req, res, next) {
 
   if (req.cookies["user_id"]) {
-		return res.redirect('/urls')
+    return res.redirect('/urls');
   }
-	next(); 
+  next();
 });
 
 
 
-/* 
+/*
  * ===================
  *  ROUTE DEFINITIONS
  * ===================
@@ -82,11 +82,11 @@ app.all('/register*', function(req, res, next) {
 
 // Register
 // render register form
-app.get("/register", (req, res) => { 
-	const templateVars = {
+app.get("/register", (req, res) => {
+  const templateVars = {
     username: req.cookies["user_id"]
   };
-	res.render("register", templateVars);
+  res.render("register", templateVars);
 });
 
 
@@ -98,19 +98,19 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
 
   if (!validEmail(email)) {
-		res.status(401);
-		res.render('error', { error: '401', msg: 'The given email address is not valid', returnTo: '/register'});
-		return;
+    res.status(401);
+    res.render('error', { error: '401', msg: 'The given email address is not valid', returnTo: '/register'});
+    return;
   }
   if (userExists(email, userDB)) {
-		res.status(409);
-		res.render('error', { error: '409', msg: 'Someone on some planet is already using this email address', returnTo: '/register'});
-		return;
+    res.status(409);
+    res.render('error', { error: '409', msg: 'Someone on some planet is already using this email address', returnTo: '/register'});
+    return;
   }
-  if (!validPassword(password)) {    
-		res.status(401);
-		res.render('error', { error: '401', msg: 'We need a stronger password like gravity', returnTo: '/register'});
-		return;
+  if (!validPassword(password)) {
+    res.status(401);
+    res.render('error', { error: '401', msg: 'We need a stronger password like gravity', returnTo: '/register'});
+    return;
   }
   const id = guid(userDB);
 
@@ -120,7 +120,7 @@ app.post("/register", (req, res) => {
     password
   };
 
-	res.cookie('user_id', id);
+  res.cookie('user_id', id);
   res.redirect("/urls");
 });
 
@@ -132,7 +132,7 @@ app.get("/login", (req, res) => {
   const templateVars = {
     username: req.cookies["user_id"]
   };
-	res.render("login", templateVars);
+  res.render("login", templateVars);
 });
 
 
@@ -145,13 +145,13 @@ app.post("/login", (req, res) => {
 
   if (!user) {
     res.status(403);
-		res.render('error', { error: '403', msg: 'There is no account with this email address! Please register', returnTo: '/register'});
-		return;
+    res.render('error', { error: '403', msg: 'There is no account with this email address! Please register', returnTo: '/register'});
+    return;
   }
   if (user.password !== password) {
     res.status(403);
-		res.render('error', { error: '403', msg: 'Invalid credentials can make your head spin', returnTo: '/login'});
-		return;
+    res.render('error', { error: '403', msg: 'Invalid credentials can make your head spin', returnTo: '/login'});
+    return;
   }
 
   res.cookie('user_id', user.id);
@@ -161,8 +161,8 @@ app.post("/login", (req, res) => {
 
 // Logout
 // process logout request
-app.post("/logout", (req, res) => {  
-	res.clearCookie('user_id');
+app.post("/logout", (req, res) => {
+  res.clearCookie('user_id');
   res.redirect(`/urls`);
 });
 
@@ -180,10 +180,10 @@ app.get("/urls/new", (req, res) => {
 // URLS
 // render all urls on a page
 app.get("/urls", (req, res) => {
-	const user = req.cookies["user_id"];
-	const urls = findMyURLs(user,urlDB);
+  const user = req.cookies["user_id"];
+  const urls = findMyURLs(user,urlDB);
   const templateVars = {
-		urls,
+    urls,
     username: userDB[user].email
   };
   res.render("urls_index", templateVars);
@@ -194,8 +194,8 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
 
   const tinyURL = guid(urlDB);
-	const user = req.cookies["user_id"];
-	const longURL = req.body.longURL
+  const user = req.cookies["user_id"];
+  const longURL = req.body.longURL;
 
   urlDB[tinyURL] = {
     longURL,
@@ -210,22 +210,22 @@ app.post("/urls", (req, res) => {
 // render a single url on its own page
 app.get("/urls/:id", (req, res) => {
 
-	const tinyURL = req.params.id
-	const user = req.cookies["user_id"]
-	const urls = findMyURLs(user,urlDB);
+  const tinyURL = req.params.id;
+  const user = req.cookies["user_id"];
+  const urls = findMyURLs(user,urlDB);
 
-	if (tinyURL in urls) {
-		const templateVars = {
-			shortURL: tinyURL,
-			username: userDB[user].email,
-			longURL: urls[tinyURL].longURL
-		};
+  if (tinyURL in urls) {
+    const templateVars = {
+      shortURL: tinyURL,
+      username: userDB[user].email,
+      longURL: urls[tinyURL].longURL
+    };
 	
-		res.render("urls_show", templateVars);	
-		return;
-	}
+    res.render("urls_show", templateVars);
+    return;
+  }
 
-	res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
+  res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
 
 });
 
@@ -233,23 +233,18 @@ app.get("/urls/:id", (req, res) => {
 // delete an existing url
 app.post("/urls/:id/delete", (req, res) => {
 
-	const tinyURL = req.params.id
-	const user = req.cookies["user_id"]
-	const urls = findMyURLs(user,urlDB);
+  const tinyURL = req.params.id;
+  const user = req.cookies["user_id"];
+  const urls = findMyURLs(user,urlDB);
 
-	if (tinyURL in urls) {
-		const templateVars = {
-			shortURL: tinyURL,
-			username: users[user].email,
-			longURL: urls[tinyURL].longURL
-		};
-		delete urlDB[req.params.id];
-  
-		res.redirect(`/urls`);
-		return;
-	}
+  if (tinyURL in urls) {
 
-	res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
+    delete urlDB[req.params.id];
+    res.redirect(`/urls`);
+    return;
+  }
+
+  res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
 
 });
 
@@ -257,38 +252,32 @@ app.post("/urls/:id/delete", (req, res) => {
 // update an existing longURL
 app.post("/urls/:id", (req, res) => {
 
-	const tinyURL = req.params.id
-	const user = req.cookies["user_id"]
-	const urls = findMyURLs(user,urlDB);
+  const tinyURL = req.params.id;
+  const user = req.cookies["user_id"];
+  const urls = findMyURLs(user,urlDB);
 
-	if (tinyURL in urls) {
-		const templateVars = {
-			shortURL: tinyURL,
-			username: userDB[user].email,
-			longURL: urls[tinyURL].longURL
-		};
+  if (tinyURL in urls) {
+    urlDB[tinyURL].longURL = req.body.longURL;
+    res.redirect(`/urls`);
+    return;
+  }
 
-	  urlDB[tinyURL].longURL = req.body.longURL;
-	  res.redirect(`/urls`);
-		return
-	}
-
-	res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
+  res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
 
 });
 
-// URLS 
+// URLS
 // redirect to longURL when someone accesses short url with u/:id
 app.get("/u/:shortURL", (req, res) => {
   const tinyURL = req.params.shortURL;
-	console.log(urlDB[tinyURL]);
+  console.log(urlDB[tinyURL]);
   const longURL = urlDB[tinyURL].longURL;
   res.redirect(longURL);
 });
 
 
 
-/* 
+/*
  * ===================
  *  APP ACTIVATION
  * ===================
