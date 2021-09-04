@@ -23,15 +23,14 @@ const PORT = 8080; // default port 8080
 
 // initialize thirdparty packages
 const bcrypt = require('bcrypt');
-const cookieParser = require('cookie-parser');
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 
 // app configuration
 // app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['firstEncryptionKey', 'secondEncryptionKey']
-}))
+}));
 app.use(express.static(__dirname + '/public'));
 app.use(express.urlencoded({extended: true}));
 app.set('view engine','ejs');
@@ -47,7 +46,7 @@ app.set('view engine','ejs');
 // route for root of the project
 app.get("/", (req, res) => {
   if (req.session.user_id) {
-		console.log(userDB);
+    console.log(userDB);
     return res.redirect('/urls');
   }
   res.redirect('/login');
@@ -129,7 +128,7 @@ app.post("/register", (req, res) => {
     password : bcrypt.hashSync(password,10) // we store the hash of password instead of plain text
   };
 
-  req.session.user_id = id;
+  req.session['user_id'] = id;
   res.redirect("/urls");
 });
 
@@ -158,16 +157,16 @@ app.post("/login", (req, res) => {
     return;
   }
 
-	bcrypt.compare(password, user.password, function(err) {
+  bcrypt.compare(password, user.password, function(err) {
     if (err) {
-			res.status(403);
-    	res.render('error', { error: '403', msg: 'Invalid credentials can make your head spin', returnTo: '/login'});
-    	return;
-		}
-		// res.cookie('user_id', user.id);
-		req.session.user_id = user.id;
-  	res.redirect("/urls");
-	});  
+      res.status(403);
+      res.render('error', { error: '403', msg: 'Invalid credentials can make your head spin', returnTo: '/login'});
+      return;
+    }
+    // res.cookie('user_id', user.id);
+    req.session['user_id'] = user.id;
+    res.redirect("/urls");
+  });
 });
 
 
@@ -282,7 +281,7 @@ app.post("/urls/:id", (req, res) => {
 // redirect to longURL when someone accesses short url with u/:id
 app.get("/u/:shortURL", (req, res) => {
   const tinyURL = req.params.shortURL;
-	console.log(urlDB[tinyURL]);
+  console.log(urlDB[tinyURL]);
   const longURL = urlDB[tinyURL].longURL;
   res.redirect(addHttp(longURL));
 });
