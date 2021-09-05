@@ -6,7 +6,7 @@ const urlDB = {
 		created_on: null,
 		last_visit: null,
 		total_visit: '0',
-		unique_visit: '0'
+		unique_visit: {}
   },
   i3BoGr: {
     longURL: "https://www.google.ca",
@@ -14,7 +14,7 @@ const urlDB = {
 		created_on: null,
 		last_visit: null,
 		total_visit: '0',
-		unique_visit: '0'
+		unique_visit: {}
   }
 };
 

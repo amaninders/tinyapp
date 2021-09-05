@@ -247,6 +247,7 @@ app.get("/urls/:id", (req, res) => {
 			headers: {
 				"user-agent": "googlebot", // fetches with googlebot crawler user agent
 			},
+			timeout: 3000,
 		}).then(data => {
 			const templateVars = {
 				shortURL: tinyURL,
@@ -260,9 +261,23 @@ app.get("/urls/:id", (req, res) => {
 			  contentType: data.contentType,
 			  images: data.images,
 			};
-			console.log(templateVars);
 			res.render("urls_show", templateVars);
-		});
+		})
+		.catch(() => {
+			const templateVars = {
+				shortURL: tinyURL,
+				username: userDB[user].email,
+				longURL: urls[tinyURL].longURL,
+				created_on: urls[tinyURL].created_on,
+				total_visit: urls[tinyURL].total_visit,
+				unique_visit: urls[tinyURL].unique_visit,
+			  description: null,
+			  mediaType: 'NA',
+			  contentType: 'NA',
+			  images: null,
+			};
+			res.render("urls_show", templateVars);
+		})
 		return;
   }
 
@@ -310,11 +325,27 @@ app.post("/urls/:id", (req, res) => {
 // URLS
 // redirect to longURL when someone accesses short url with u/:id
 app.get("/u/:shortURL", (req, res) => {
+	
+	const visitor = (req.session.user_id) ? req.session.user_id : req.ip;
   const tinyURL = req.params.shortURL;
+
 	if (tinyURL in urlDB) {
-		const longURL = urlDB[tinyURL].longURL;
-  	res.redirect(addHttp(longURL));
-		urlDB[tinyURL].total_visit ++;
+
+		const urlItem = urlDB[tinyURL];
+
+		// redirect the visitor to longURL
+  	res.redirect(addHttp(urlItem.longURL));
+
+		// update total visit count
+		urlItem.total_visit++;
+
+		// update unique visit count
+		if (visitor in urlItem.unique_visit) {
+			urlItem.unique_visit[visitor].count++;
+			return
+		}		
+	
+		urlItem.unique_visit[visitor] = {	count : 1 };
 		return;
 	}
 	res.render('error', { error: '404', msg: 'This url does not exist in our universe', returnTo: '/'});
