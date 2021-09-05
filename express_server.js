@@ -24,12 +24,15 @@ const PORT = 8080; // default port 8080
 
 // initialize thirdparty packages
 const moment = require('moment');
+const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser')
 const cookieSession = require('cookie-session');
 const methodOverride = require('method-override')
 const { getLinkPreview } = require('link-preview-js');
 
 // app configuration
+app.use(cookieParser());
 app.set('view engine','ejs');
 app.use(methodOverride('_method'));
 app.use(express.urlencoded({extended: true}));
@@ -329,8 +332,10 @@ app.put("/urls/:id", (req, res) => {
 // redirect to longURL when someone accesses short url with u/:id
 app.get("/u/:shortURL", (req, res) => {
 	
-  const visitor = (req.session.user_id) ? req.session.user_id : req.ip;
+  const visitor = (req.cookies.visitorId) ? req.cookies.visitorId : uuidv4();
   const tinyURL = req.params.shortURL;
+	
+	res.cookie('visitorId', visitor);
 
   if (tinyURL in urlDB) {
 
@@ -365,5 +370,5 @@ app.get("/u/:shortURL", (req, res) => {
  * ===================
  */
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`TinyApp listening on port ${PORT}!`);
 });

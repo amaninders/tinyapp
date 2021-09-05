@@ -27,7 +27,8 @@
     "express": "^4.17.1",
     "link-preview-js": "^2.1.8",
     "method-override": "^3.0.0",
-    "moment": "^2.29.1"
+    "moment": "^2.29.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "chai": "^4.3.4",
