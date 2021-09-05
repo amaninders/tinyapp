@@ -311,9 +311,13 @@ app.post("/urls/:id", (req, res) => {
 // redirect to longURL when someone accesses short url with u/:id
 app.get("/u/:shortURL", (req, res) => {
   const tinyURL = req.params.shortURL;
-  const longURL = urlDB[tinyURL].longURL;
-  res.redirect(addHttp(longURL));
-	urlDB[tinyURL].total_visit ++;
+	if (tinyURL in urlDB) {
+		const longURL = urlDB[tinyURL].longURL;
+  	res.redirect(addHttp(longURL));
+		urlDB[tinyURL].total_visit ++;
+		return;
+	}
+	res.render('error', { error: '404', msg: 'This url does not exist in our universe', returnTo: '/'});
 });
 
 
