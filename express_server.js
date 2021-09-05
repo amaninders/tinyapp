@@ -22,6 +22,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 // initialize thirdparty packages
+const moment = require('moment');
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
 const { getLinkPreview, getPreviewFromContent } = require('link-preview-js');
@@ -220,7 +221,11 @@ app.post("/urls", (req, res) => {
 
   urlDB[tinyURL] = {
     longURL,
-    userID: user
+    userID: user,
+		created_on: moment().format('LLL [UTC]'),
+		last_visit: null,
+		total_visit: '0',
+		unique_visit: '0'
   };
 
   res.redirect(`/urls/${tinyURL}`);
@@ -247,6 +252,9 @@ app.get("/urls/:id", (req, res) => {
 				shortURL: tinyURL,
 				username: userDB[user].email,
 				longURL: urls[tinyURL].longURL,
+				created_on: urls[tinyURL].created_on,
+				total_visit: urls[tinyURL].total_visit,
+				unique_visit: urls[tinyURL].unique_visit,
 			  description: data.description,
 			  mediaType: data.mediaType,
 			  contentType: data.contentType,
@@ -305,6 +313,7 @@ app.get("/u/:shortURL", (req, res) => {
   const tinyURL = req.params.shortURL;
   const longURL = urlDB[tinyURL].longURL;
   res.redirect(addHttp(longURL));
+	urlDB[tinyURL].total_visit ++;
 });
 
 

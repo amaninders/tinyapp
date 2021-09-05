@@ -7,30 +7,73 @@
 </head>
 <body>
 	<%- include('partials/_header') %>
-  <div class="card text-center">
-      <div class="card-header"></div>
-      <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
-        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
-				<p>
-					<button class="btn btn-dark" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-						Update the Long URL
-					</button>
-				</p>
-				<div class="collapse" id="collapseExample">
-					<div class="card card-body">
-						<form class="form-inline" action="/urls/<%= shortURL %>" method="POST">
-							<div class="form-group mb-2 mx-auto" style="width: 550px">
-								<label for="longURL">Enter the new URL:</label>
-								<input class="form-control" name="longURL" placeholder="<%= longURL %>" pattern="https://.*" style="width: 300px; margin: 1em" required>
-								<button type="submit" class="btn btn-danger">Update</button>
-							</div>
-						</form>
+		<div class="card text-center mx-auto" style="width: 50rem; margin-top: 15rem; margin-bottom: 10rem;">
+			<div class="row no-gutters">
+				<div class="col-md-4">
+					<% if (images && images.length > 0) { %>
+						<img src="<%= images[0] %>" class="card-img" alt="link preview" style="width: 265.920px; height: 300px; object-fit: cover;">
+					<% } else { %>
+						<img src="/images/confused.gif" class="card-img" alt="link preview" style="width: 265.920px; height: 300px; object-fit: cover;">
+					<% } %>
+				</div>
+				<div class="col-md-8">
+					<div class="card text-center" style="min-height: 100%;">
+						<div class="card-body">
+							<table class="table table-hover table-borderless">
+								<tbody>
+									<tr>
+										<th scope="row" class="col-sm-4" style="text-transform: uppercase; text-align: justify;">short url</th>
+										<td style="text-align: justify;"><a href="/u/<%= shortURL %>"><%= shortURL %></a></td>
+									</tr>
+									<tr>
+										<th scope="row" class="col-sm-4" style="text-transform: uppercase; text-align: justify;">long URL</th>
+										<td style="text-align: justify;"><a href="<%= longURL %>"><%= longURL %></a></td>
+									</tr>
+									<tr>
+										<th scope="row" class="col-sm-4" style="text-transform: uppercase; text-align: justify;">created on</th>
+										<td style="text-align: justify;"><%= created_on %></td>
+									</tr>
+									<tr>
+										<th scope="row" class="col-sm-4" style="text-transform: uppercase; text-align: justify;">media type</th>
+										<td style="text-align: justify;"><%= mediaType %></td>
+									</tr>
+									<tr>
+										<th scope="row" class="col-sm-4" style="text-transform: uppercase; text-align: justify;">content type</th>
+										<td style="text-align: justify;"><%= contentType %></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
 					</div>
 				</div>
-      </div>
-    <div class="card-footer text-muted"></div>
-  </div>
+			</div>
+			<div class="card text-center" style="min-height: 100%;">
+				<div class="card-body">
+					<div class="alert alert-info" role="alert">
+						<% if (!description) { %>
+							no description availale for this link
+						<% } else { %>
+							<%= description %>
+						<% } %>
+					</div>
+					<form class="form-inline" action="/urls/<%= shortURL %>" method="POST">
+					<div class="form-group mb-2 mx-auto" style="width: 550px">
+						<label for="longURL">Edit long URL:</label>
+						<input class="form-control" name="longURL" value="<%= longURL %>" pattern="https://.*" style="width: 300px; margin-left: 1em; margin-right: 1em;" required>
+						<button type="submit" class="btn btn-warning">Update</button>
+					</div>
+				</form>
+				</div>
+				<div class="card-footer text-muted">
+					<table class="col">
+						<tr>
+							<td>Total Visits <span class="badge badge-secondary"><%= total_visit %></span></td>
+							<td>Unique Visits <span class="badge badge-secondary"><%= unique_visit %></span></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
 	<%- include('partials/_footer') %>
 </body>
 </html>
