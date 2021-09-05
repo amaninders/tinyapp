@@ -223,9 +223,9 @@ app.post("/urls", (req, res) => {
     longURL,
     userID: user,
 		created_on: moment().format('LLL [UTC]'),
-		last_visit: null,
-		total_visit: '0',
-		unique_visit: '0'
+		last_visit: 'NA',
+		total_visit: 0,
+		unique_visit: {}
   };
 
   res.redirect(`/urls/${tinyURL}`);
@@ -241,8 +241,8 @@ app.get("/urls/:id", (req, res) => {
   const urls = findMyURLs(user,urlDB);
 
   if (tinyURL in urls) {
-
-		getLinkPreview(urls[tinyURL].longURL, {
+		const urlItem = urls[tinyURL]; 
+		getLinkPreview(urlItem.longURL, {
 			imagesPropertyType: "og", // fetches only open-graph images
 			headers: {
 				"user-agent": "googlebot", // fetches with googlebot crawler user agent
@@ -252,10 +252,10 @@ app.get("/urls/:id", (req, res) => {
 			const templateVars = {
 				shortURL: tinyURL,
 				username: userDB[user].email,
-				longURL: urls[tinyURL].longURL,
-				created_on: urls[tinyURL].created_on,
-				total_visit: urls[tinyURL].total_visit,
-				unique_visit: urls[tinyURL].unique_visit,
+				longURL: urlItem.longURL,
+				created_on: urlItem.created_on,
+				total_visit: urlItem.total_visit,
+				unique_visit: urlItem.unique_visit,
 			  description: data.description,
 			  mediaType: data.mediaType,
 			  contentType: data.contentType,
@@ -267,10 +267,10 @@ app.get("/urls/:id", (req, res) => {
 			const templateVars = {
 				shortURL: tinyURL,
 				username: userDB[user].email,
-				longURL: urls[tinyURL].longURL,
-				created_on: urls[tinyURL].created_on,
-				total_visit: urls[tinyURL].total_visit,
-				unique_visit: urls[tinyURL].unique_visit,
+				longURL: urlItem.longURL,
+				created_on: urlItem.created_on,
+				total_visit: urlItem.total_visit,
+				unique_visit: urlItem.unique_visit,
 			  description: null,
 			  mediaType: 'NA',
 			  contentType: 'NA',
