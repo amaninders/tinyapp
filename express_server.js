@@ -57,16 +57,16 @@ app.get("/", (req, res) => {
 
 // user login check for routes leading to /urls/*
 app.all('/urls/new', function(req, res, next) {
-	if (!req.session.user_id) {
-		return res.redirect('/login');
-	}
-	next();
+  if (!req.session.user_id) {
+    return res.redirect('/login');
+  }
+  next();
 });
 
 // user login check for routes leading to /urls
 app.all('/urls', function(req, res, next) {
   if (!req.session.user_id) {
-		handleError(res, 'enforceLogin')
+    handleError(res, 'enforceLogin');
   }
   next();
 });
@@ -120,10 +120,10 @@ app.post("/register", (req, res) => {
     return handleError(res, 'invalidEmail');
   }
   if (userExists(email, userDB)) {
-		return handleError(res, 'existingUser');
+    return handleError(res, 'existingUser');
   }
   if (!validPassword(password)) {
-		return handleError(res, 'passwordRequirements');
+    return handleError(res, 'passwordRequirements');
   }
 
   const id = guid(userDB);
@@ -158,12 +158,12 @@ app.post("/login", (req, res) => {
   const user = userExists(email,userDB);
 
   if (!user) {
-		return handleError(res, 'noUser');
+    return handleError(res, 'noUser');
   }
 
   bcrypt.compare(password, user.password, function(err) {
     if (err) {
-			return handleError(res, 'passwordMatch');
+      return handleError(res, 'passwordMatch');
     }
     req.session['user_id'] = user.id;
     res.redirect("/urls");
@@ -212,10 +212,10 @@ app.post("/urls", (req, res) => {
   urlDB[tinyURL] = {
     longURL,
     userID: user,
-		created_on: moment().format('LLL [UTC]'),
-		last_visit: 'NA',
-		total_visit: 0,
-		unique_visit: {}
+    createdOn: moment().format('LLL [UTC]'),
+    lastVisit: 'NA',
+    totalVisit: 0,
+    uniqueVisit: {}
   };
 
   res.redirect(`/urls/${tinyURL}`);
@@ -226,8 +226,8 @@ app.post("/urls", (req, res) => {
 // render a single url on its own page
 app.get("/urls/:id", (req, res) => {
 
-	if (!req.session.user_id) {
-		return handleError(res, 'urlsLogin')
+  if (!req.session.user_id) {
+    return handleError(res, 'urlsLogin');
   }
 
   const tinyURL = req.params.id;
@@ -235,55 +235,55 @@ app.get("/urls/:id", (req, res) => {
   const urls = findMyURLs(user,urlDB);
 
   if (tinyURL in urls) {
-		const urlItem = urls[tinyURL]; 
-		getLinkPreview(urlItem.longURL, {
-			imagesPropertyType: "og", // fetches only open-graph images
-			headers: {
-				"user-agent": "googlebot", // fetches with googlebot crawler user agent
-			},
-			timeout: 3000,
-		}).then(data => {
-			const templateVars = {
-				shortURL: tinyURL,
-				username: userDB[user].email,
-				longURL: urlItem.longURL,
-				created_on: urlItem.created_on,
-				total_visit: urlItem.total_visit,
-				unique_visit: urlItem.unique_visit,
-			  description: data.description,
-			  mediaType: data.mediaType,
-			  contentType: data.contentType,
-			  images: data.images,
-			};
-			res.render("urls_show", templateVars);
-		})
-		.catch(() => {
-			const templateVars = {
-				shortURL: tinyURL,
-				username: userDB[user].email,
-				longURL: urlItem.longURL,
-				created_on: urlItem.created_on,
-				total_visit: urlItem.total_visit,
-				unique_visit: urlItem.unique_visit,
-			  description: null,
-			  mediaType: 'NA',
-			  contentType: 'NA',
-			  images: null,
-			};
-			res.render("urls_show", templateVars);
-		})
-		return;
+    const urlItem = urls[tinyURL];
+    getLinkPreview(urlItem.longURL, {
+      imagesPropertyType: "og", // fetches only open-graph images
+      headers: {
+        "user-agent": "googlebot", // fetches with googlebot crawler user agent
+      },
+      timeout: 3000,
+    }).then(data => {
+      const templateVars = {
+        shortURL: tinyURL,
+        username: userDB[user].email,
+        longURL: urlItem.longURL,
+        createdOn: urlItem.createdOn,
+        totalVisit: urlItem.totalVisit,
+        uniqueVisit: urlItem.uniqueVisit,
+        description: data.description,
+        mediaType: data.mediaType,
+        contentType: data.contentType,
+        images: data.images,
+      };
+      res.render("urls_show", templateVars);
+    })
+      .catch(() => {
+        const templateVars = {
+          shortURL: tinyURL,
+          username: userDB[user].email,
+          longURL: urlItem.longURL,
+          createdOn: urlItem.createdOn,
+          totalVisit: urlItem.totalVisit,
+          uniqueVisit: urlItem.uniqueVisit,
+          description: null,
+          mediaType: 'NA',
+          contentType: 'NA',
+          images: null,
+        };
+        res.render("urls_show", templateVars);
+      });
+    return;
   }
 
-	return handleError(res, 'unauthorized')
+  return handleError(res, 'unauthorized');
 });
 
 // URLS
 // delete an existing url
 app.post("/urls/:id/delete", (req, res) => {
 
-	if (!req.session.user_id) {
-		return handleError(res, 'enforceLogin')
+  if (!req.session.user_id) {
+    return handleError(res, 'enforceLogin');
   }
 
   const tinyURL = req.params.id;
@@ -296,15 +296,15 @@ app.post("/urls/:id/delete", (req, res) => {
     res.redirect(`/urls`);
     return;
   }
-	return handleError(res, 'unauthorized')
+  return handleError(res, 'unauthorized');
 });
 
 // URLS
 // update an existing longURL
 app.post("/urls/:id", (req, res) => {
 
-	if (!req.session.user_id) {
-		return handleError(res, 'enforceLogin')
+  if (!req.session.user_id) {
+    return handleError(res, 'enforceLogin');
   }
 
   const tinyURL = req.params.id;
@@ -316,38 +316,38 @@ app.post("/urls/:id", (req, res) => {
     res.redirect(`/urls`);
     return;
   }
-	return handleError(res, 'unauthorized')
+  return handleError(res, 'unauthorized');
 });
 
 // URLS
 // redirect to longURL when someone accesses short url with u/:id
 app.get("/u/:shortURL", (req, res) => {
 	
-	const visitor = (req.session.user_id) ? req.session.user_id : req.ip;
+  const visitor = (req.session.user_id) ? req.session.user_id : req.ip;
   const tinyURL = req.params.shortURL;
 
-	if (tinyURL in urlDB) {
+  if (tinyURL in urlDB) {
 
-		const urlItem = urlDB[tinyURL];
+    const urlItem = urlDB[tinyURL];
 
-		// redirect the visitor to longURL
-  	res.redirect(addHttp(urlItem.longURL));
+    // redirect the visitor to longURL
+    res.redirect(addHttp(urlItem.longURL));
 
-		// update total visit count and last visit
-		urlItem.total_visit++;
-		urlItem.last_visit = moment().format('LLL [UTC]');
+    // update total visit count and last visit
+    urlItem.totalVisit++;
+    urlItem.lastVisit = moment().format('LLL [UTC]');
 
-		// update unique visit count
-		if (visitor in urlItem.unique_visit) {
-			urlItem.unique_visit[visitor].count++;
-			return
-		}		
+    // update unique visit count
+    if (visitor in urlItem.uniqueVisit) {
+      urlItem.uniqueVisit[visitor].count++;
+      return;
+    }
 	
-		urlItem.unique_visit[visitor] = {	count : 1 };
-		return;
-	}
+    urlItem.uniqueVisit[visitor] = {	count : 1 };
+    return;
+  }
 
-	return handleError(res, 'deadURL')
+  return handleError(res, 'deadURL');
 });
 
 

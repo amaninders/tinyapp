@@ -30,10 +30,10 @@
           <tr>
             <td><%= url %></td>
             <td><%= urls[url].longURL %></td>
-            <td><%= urls[url].created_on %></td>
-            <td><%= urls[url].last_visit %></td>
-            <td><%= urls[url].total_visit %></td>
-            <td><%= Object.keys(urls[url].unique_visit).length %></td>
+            <td><%= urls[url].createdOn %></td>
+            <td><%= urls[url].lastVisit %></td>
+            <td><%= urls[url].totalVisit %></td>
+            <td><%= Object.keys(urls[url].uniqueVisit).length %></td>
             <td><a class="btn btn-outline-success" href="/urls/<%= url %>" role="button">Edit</a></td>
             <td>
 							<form method="POST" action="/urls/<%= url %>/delete">
