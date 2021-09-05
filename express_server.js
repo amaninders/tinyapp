@@ -11,6 +11,7 @@ const { findMyURLs } = require('./helpers/myUrls');
 const { userExists } = require('./helpers/findUser');
 const { validEmail } = require('./helpers/emailValidator');
 const { validPassword } = require('./helpers/passwordValidator');
+const { handleError } = require('./helpers/customErrorHandler');
 
 // intialize databases
 const { urlDB } = require('./db/urlDb');
@@ -25,7 +26,7 @@ const PORT = 8080; // default port 8080
 const moment = require('moment');
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
-const { getLinkPreview, getPreviewFromContent } = require('link-preview-js');
+const { getLinkPreview } = require('link-preview-js');
 
 // app configuration
 // app.use(cookieParser());
@@ -53,23 +54,23 @@ app.get("/", (req, res) => {
   res.redirect('/login');
 });
 
+
+// user login check for routes leading to /urls/*
+app.all('/urls/new', function(req, res, next) {
+	if (!req.session.user_id) {
+		return res.redirect('/login');
+	}
+	next();
+});
+
 // user login check for routes leading to /urls
 app.all('/urls', function(req, res, next) {
   if (!req.session.user_id) {
-		res.status(401);
-    res.render('error', { error: '401', msg: 'Please sign in for a home run', returnTo: '/login'});
-    return;
+		handleError(res, 'enforceLogin')
   }
   next();
 });
 
-// user login check for routes leading to /urls/*
-app.all('/urls/*', function(req, res, next) {
-  if (!req.session.user_id) {
-    return res.redirect('/login');
-  }
-  next();
-});
 
 // user login check for routes leading to /login*
 app.all('/login*', function(req, res, next) {
@@ -116,23 +117,17 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
 
   if (!validEmail(email)) {
-    res.status(401);
-    res.render('error', { error: '401', msg: 'The given email address is not valid', returnTo: '/register'});
-    return;
+    return handleError(res, 'invalidEmail');
   }
   if (userExists(email, userDB)) {
-    res.status(409);
-    res.render('error', { error: '409', msg: 'Someone on some planet is already using this email address', returnTo: '/register'});
-    return;
+		return handleError(res, 'existingUser');
   }
   if (!validPassword(password)) {
-    res.status(401);
-    res.render('error', { error: '401', msg: 'We need a stronger password like gravity', returnTo: '/register'});
-    return;
+		return handleError(res, 'passwordRequirements');
   }
+
   const id = guid(userDB);
 	
-
   userDB[id] = {
     id,
     email,
@@ -163,18 +158,13 @@ app.post("/login", (req, res) => {
   const user = userExists(email,userDB);
 
   if (!user) {
-    res.status(403);
-    res.render('error', { error: '403', msg: 'There is no account with this email address! Please register', returnTo: '/register'});
-    return;
+		return handleError(res, 'noUser');
   }
 
   bcrypt.compare(password, user.password, function(err) {
     if (err) {
-      res.status(403);
-      res.render('error', { error: '403', msg: 'Invalid credentials can make your head spin', returnTo: '/login'});
-      return;
+			return handleError(res, 'passwordMatch');
     }
-    // res.cookie('user_id', user.id);
     req.session['user_id'] = user.id;
     res.redirect("/urls");
   });
@@ -236,6 +226,10 @@ app.post("/urls", (req, res) => {
 // render a single url on its own page
 app.get("/urls/:id", (req, res) => {
 
+	if (!req.session.user_id) {
+		return handleError(res, 'urlsLogin')
+  }
+
   const tinyURL = req.params.id;
   const user = req.session.user_id;
   const urls = findMyURLs(user,urlDB);
@@ -281,13 +275,16 @@ app.get("/urls/:id", (req, res) => {
 		return;
   }
 
-  res.render('error', { error: '401', msg: 'Seems like this url was consumed by a black hole and we cannot find it', returnTo: '/'});
-
+	return handleError(res, 'unauthorized')
 });
 
 // URLS
 // delete an existing url
 app.post("/urls/:id/delete", (req, res) => {
+
+	if (!req.session.user_id) {
+		return handleError(res, 'enforceLogin')
+  }
 
   const tinyURL = req.params.id;
   const user = req.session.user_id;
@@ -299,14 +296,16 @@ app.post("/urls/:id/delete", (req, res) => {
     res.redirect(`/urls`);
     return;
   }
-
-  res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
-
+	return handleError(res, 'unauthorized')
 });
 
 // URLS
 // update an existing longURL
 app.post("/urls/:id", (req, res) => {
+
+	if (!req.session.user_id) {
+		return handleError(res, 'enforceLogin')
+  }
 
   const tinyURL = req.params.id;
   const user = req.session.user_id;
@@ -317,9 +316,7 @@ app.post("/urls/:id", (req, res) => {
     res.redirect(`/urls`);
     return;
   }
-
-  res.render('error', { error: '401', msg: 'Seems like you do not have access to this url', returnTo: '/'});
-
+	return handleError(res, 'unauthorized')
 });
 
 // URLS
@@ -349,7 +346,8 @@ app.get("/u/:shortURL", (req, res) => {
 		urlItem.unique_visit[visitor] = {	count : 1 };
 		return;
 	}
-	res.render('error', { error: '404', msg: 'This url does not exist in our universe', returnTo: '/'});
+
+	return handleError(res, 'deadURL')
 });
 
 
