@@ -26,17 +26,18 @@ const PORT = 8080; // default port 8080
 const moment = require('moment');
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
+const methodOverride = require('method-override')
 const { getLinkPreview } = require('link-preview-js');
 
 // app configuration
-// app.use(cookieParser());
+app.set('view engine','ejs');
+app.use(methodOverride('_method'));
+app.use(express.urlencoded({extended: true}));
+app.use(express.static(__dirname + '/public'));
 app.use(cookieSession({
   name: 'session',
   keys: ['firstEncryptionKey', 'secondEncryptionKey']
 }));
-app.use(express.static(__dirname + '/public'));
-app.use(express.urlencoded({extended: true}));
-app.set('view engine','ejs');
 
 
 /*
@@ -276,11 +277,12 @@ app.get("/urls/:id", (req, res) => {
   }
 
   return handleError(res, 'unauthorized');
+
 });
 
 // URLS
 // delete an existing url
-app.post("/urls/:id/delete", (req, res) => {
+app.delete("/urls/:id", (req, res) => {
 
   if (!req.session.user_id) {
     return handleError(res, 'enforceLogin');
@@ -296,12 +298,14 @@ app.post("/urls/:id/delete", (req, res) => {
     res.redirect(`/urls`);
     return;
   }
+
   return handleError(res, 'unauthorized');
+
 });
 
 // URLS
 // update an existing longURL
-app.post("/urls/:id", (req, res) => {
+app.put("/urls/:id", (req, res) => {
 
   if (!req.session.user_id) {
     return handleError(res, 'enforceLogin');
@@ -316,7 +320,9 @@ app.post("/urls/:id", (req, res) => {
     res.redirect(`/urls`);
     return;
   }
+
   return handleError(res, 'unauthorized');
+
 });
 
 // URLS
@@ -348,6 +354,7 @@ app.get("/u/:shortURL", (req, res) => {
   }
 
   return handleError(res, 'deadURL');
+	
 });
 
 
