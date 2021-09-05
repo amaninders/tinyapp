@@ -336,8 +336,9 @@ app.get("/u/:shortURL", (req, res) => {
 		// redirect the visitor to longURL
   	res.redirect(addHttp(urlItem.longURL));
 
-		// update total visit count
+		// update total visit count and last visit
 		urlItem.total_visit++;
+		urlItem.last_visit = moment().format('LLL [UTC]');
 
 		// update unique visit count
 		if (visitor in urlItem.unique_visit) {
