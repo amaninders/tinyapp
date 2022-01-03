@@ -36,7 +36,8 @@ app.use(cookieParser());
 app.set('view engine','ejs');
 app.use(methodOverride('_method'));
 app.use(express.urlencoded({extended: true}));
-app.use(express.static(__dirname + '/public'));
+// use the express-static middleware
+app.use(express.static("public"))
 app.use(cookieSession({
   name: 'session',
   keys: ['firstEncryptionKey', 'secondEncryptionKey']
