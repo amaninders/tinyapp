@@ -20,7 +20,7 @@ const { userDB } = require('./db/userDb');
 // app initialization
 const express = require('express');
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 3000; // default port 8080
 
 // initialize thirdparty packages
 const moment = require('moment');
