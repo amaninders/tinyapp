@@ -20,7 +20,7 @@ const { userDB } = require('./db/userDb');
 // app initialization
 const express = require('express');
 const app = express();
-const PORT = 3000; // default port 8080
+const PORT = 8080; // default port 8080
 
 // initialize thirdparty packages
 const moment = require('moment');
@@ -36,8 +36,7 @@ app.use(cookieParser());
 app.set('view engine','ejs');
 app.use(methodOverride('_method'));
 app.use(express.urlencoded({extended: true}));
-// use the express-static middleware
-app.use(express.static("public"))
+app.use(express.static(__dirname + '/public'));
 app.use(cookieSession({
   name: 'session',
   keys: ['firstEncryptionKey', 'secondEncryptionKey']
