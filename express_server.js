@@ -20,7 +20,6 @@ const { userDB } = require('./db/userDb');
 // app initialization
 const express = require('express');
 const app = express();
-const PORT = 8080; // default port 8080
 
 // initialize thirdparty packages
 const moment = require('moment');
@@ -369,6 +368,6 @@ app.get("/u/:shortURL", (req, res) => {
  *  APP ACTIVATION
  * ===================
  */
-app.listen(PORT, () => {
+app.listen((process.env.PORT || 5000), () => {
   console.log(`TinyApp listening on port ${PORT}!`);
 });
