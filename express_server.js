@@ -20,6 +20,7 @@ const { userDB } = require('./db/userDb');
 // app initialization
 const express = require('express');
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 // initialize thirdparty packages
 const moment = require('moment');
@@ -368,6 +369,6 @@ app.get("/u/:shortURL", (req, res) => {
  *  APP ACTIVATION
  * ===================
  */
-app.listen((process.env.PORT || 5000), () => {
+app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
 });
